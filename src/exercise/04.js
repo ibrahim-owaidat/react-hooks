@@ -4,10 +4,25 @@
 import * as React from 'react'
 import {useState} from 'react'
 
-function Board() {
-  const [squares, setSquares] = useState(Array(9).fill(null))
+const useLocalStorageState = (key, defaultValue = '') => {
+  const [state, setState] = React.useState(
+    () => JSON.parse(window.localStorage.getItem(key)) || defaultValue,
+  )
 
-  const [nextValue, setNextValue] = useState('X')
+  React.useEffect(() => {
+    window.localStorage.setItem(key, JSON.stringify(state))
+  }, [key, state])
+
+  return [state, setState]
+}
+
+function Board() {
+  const [squares, setSquares] = useLocalStorageState(
+    'squares',
+    Array(9).fill(null),
+  )
+
+  const nextValue = calculateNextValue(squares)
   const winner = calculateWinner(squares)
   const status = calculateStatus(winner, squares, nextValue)
 
@@ -20,8 +35,6 @@ function Board() {
     const squaresCopy = [...squares]
     squaresCopy[square] = nextValue
     setSquares(squaresCopy)
-    if (nextValue === 'O') setNextValue('X')
-    else setNextValue('O')
   }
 
   function restart() {
@@ -38,7 +51,6 @@ function Board() {
 
   return (
     <div>
-      {/* 🐨 put the status in the div below */}
       <div className="status">{status}</div>
       <div className="board-row">
         {renderSquare(0)}
